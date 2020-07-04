@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+
+{% block app_container %}
+<div class="container">
+	<div class="center-block">
+       <div class="col-lg-12">
+         	<h1 class="page-header">Proxychecker</h1>
+         	<h5 style="text-align: left;">Upload the file:</h5>
+			<form id="uploadFrm" enctype="multipart/form-data" action="/" method="POST">
+				<div class="row" style="text-align: left;">
+					<div class="col-sm-6 form-group" style="float: left;">
+						<div class="input-group">
+					        <label id="browsebutton" for="uploaded_file_id" class="btn btn-default input-group-addon" style="background-color:white">
+					            <input name="uploaded_file" id="uploaded_file_id" type="file" accept="text/plain" style="display:none;">
+					            Browse...
+					        </label>
+					        <input id="filename_field" type="text" class="form-control" readonly="">
+				        </div>
+				        <small class="form-text text-muted">Only .txt is allowed. IP:PORT format is expected. Separated by the line.<br></small>
+				    </div>
+					<div class="col-sm-6 form-group">
+						<button id="uploadBtn" form="uploadFrm" class="btn btn-primary" type="submit">Upload Now</button>
+					</div>
+				</div>
+			</form>
+			<h5 style="text-align: left">Or put the proxies bellow:</h5>
+
+	         	<form id="checkerFrm" action="/checking/" method="POST">
+	         		<div class="row" style="text-align: left;">
+			         	<div class="col-sm-12 form-group">
+			         		<textarea style="overflow: auto;" class="form-control" id="proxy_list_id" name="proxy_list">{{ data }}</textarea>
+			         		<small class="form-text text-muted">IP:PORT format is expected. Separated by the line.<br></small>
+			         	</div>
+		         	</div>
+		         	<div id="printInfo"></div>
+		         	
+		         	<h5 style="text-align: left">Set up the threads count:</h5>
+		         	<div class="row" style="text-align: left;">
+			         	<div class="col-sm-6 form-group">
+			         		<input class="form-control" type="number" min="0" name="threads" value="16">
+			         	</div>
+			         	<div class="col-sm-6 form-group">
+							<button id="checkerBtn" class="btn btn-primary" type="submit">Run Check</button>
+						</div>
+					</div>
+				</form>
+       </div>
+    </div>
+</div>
+
+<!-- script type="text/javascript">
+	autosize(document.getElementById("proxy_list_id"));
+</script -->
+
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#browsebutton :file').change(function(e){
+        var fileName = e.target.files[0].name;
+        $("#filename_field").attr('placeholder',fileName)
+    });
+});
+</script>
+
+<script type="text/javascript">
+var frm = $('#checkerFrm');
+var subbtn = $("#checkerBtn");
+frm.submit(function () {
+	// subbtn.attr("disabled", true);
+	$("#printInfo").html('<p>Checking... Please, wait.</p>');
+});
+</script>
+{% endblock %}
