@@ -1,14 +1,14 @@
 import asyncio
-import csv
-import io
 
 import aiohttp
 import uvicorn
 from aiohttp import ClientTimeout
 from fastapi import FastAPI, Request, UploadFile, File, Form
-from starlette.responses import StreamingResponse
-from starlette.staticfiles import StaticFiles
-from starlette.templating import Jinja2Templates
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 
 from checker import ProxyChecker
 
@@ -31,32 +31,24 @@ async def load_file(request: Request, uploaded_file: UploadFile = File(...)):
     )
 
 
+class Body(BaseModel):
+    proxy_list: str
+    threads: int
+
+
 @app.post("/checking/")
-async def check_proxies(proxy_list: str = Form(...), threads: int = Form(...)):
-    proxy_list = [proxy.strip() for proxy in proxy_list.split("\n")]
-    sem = asyncio.Semaphore(value=threads)
+async def check_proxies(body: Body):
+    proxy_list = [proxy.strip() for proxy in body.proxy_list.split("\n")]
+    sem = asyncio.Semaphore(value=body.threads)
     async with aiohttp.ClientSession(
         timeout=ClientTimeout(15), connector=aiohttp.TCPConnector(ssl=False)
     ) as session:
         checker = ProxyChecker(session, sem, set(proxy_list))
         data = await checker.execute()
 
-    fieldnames = ["host", "port", "timeout", "status_code"]
-    f = io.StringIO()
-    writer = csv.DictWriter(f, fieldnames=fieldnames)
-    writer.writeheader()
-    for i in data:
-        if not i:
-            continue
-        writer.writerow(i)
-    f.seek(0)
-
-    return StreamingResponse(
-        f,
-        media_type="text/csv",
-        headers={"Content-Disposition": "inline; filename=result.csv"},
-    )
+    return JSONResponse(data)
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
+    uvicorn.run(app, host="127.0.0.1", port=8000, http="h11", loop="asyncio")

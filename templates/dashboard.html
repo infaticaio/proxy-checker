@@ -3,71 +3,158 @@
 
 {% block app_container %}
 <div class="container">
-	<div class="center-block">
-       <div class="col-lg-12">
-         	<h1 class="page-header">Proxychecker</h1>
-         	<h5 style="text-align: left;">Upload the file:</h5>
-			<form id="uploadFrm" enctype="multipart/form-data" action="/" method="POST">
-				<div class="row" style="text-align: left;">
-					<div class="col-sm-6 form-group" style="float: left;">
-						<div class="input-group">
-					        <label id="browsebutton" for="uploaded_file_id" class="btn btn-default input-group-addon" style="background-color:white">
-					            <input name="uploaded_file" id="uploaded_file_id" type="file" accept="text/plain" style="display:none;">
-					            Browse...
-					        </label>
-					        <input id="filename_field" type="text" class="form-control" readonly="">
-				        </div>
-				        <small class="form-text text-muted">Only .txt is allowed. IP:PORT format is expected. Separated by the line.<br></small>
-				    </div>
-					<div class="col-sm-6 form-group">
-						<button id="uploadBtn" form="uploadFrm" class="btn btn-primary" type="submit">Upload Now</button>
-					</div>
-				</div>
-			</form>
-			<h5 style="text-align: left">Or put the proxies bellow:</h5>
+    <div class="center-block">
+        <div class="col-lg-12">
+            <h1 class="page-header">Proxychecker</h1>
+            <h5 style="text-align: left;">Upload the file:</h5>
+            <form id="uploadFrm" enctype="multipart/form-data" action="/" method="POST">
+                <div class="row" style="text-align: left;">
+                    <div class="col-sm-6 form-group" style="float: left;">
+                        <div class="input-group">
+                            <label id="browsebutton" for="uploaded_file_id" class="btn btn-default input-group-addon"
+                                   style="background-color:white">
+                                <input name="uploaded_file" id="uploaded_file_id" type="file" accept="text/plain"
+                                       style="display:none;">
+                                Browse...
+                            </label>
+                            <input id="filename_field" type="text" class="form-control" readonly="">
+                        </div>
+                        <small class="form-text text-muted">Only .txt is allowed. IP:PORT format is expected. Separated
+                            by the line.<br></small>
+                    </div>
+                    <div class="col-sm-6 form-group">
+                        <button id="uploadBtn" form="uploadFrm" class="btn btn-primary" type="submit">Upload Now
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <h5 style="text-align: left">Or put the proxies bellow:</h5>
 
-	         	<form id="checkerFrm" action="/checking/" method="POST">
-	         		<div class="row" style="text-align: left;">
-			         	<div class="col-sm-12 form-group">
-			         		<textarea style="overflow: auto;" class="form-control" id="proxy_list_id" name="proxy_list">{{ data }}</textarea>
-			         		<small class="form-text text-muted">IP:PORT format is expected. Separated by the line.<br></small>
-			         	</div>
-		         	</div>
-		         	<div id="printInfo"></div>
-		         	
-		         	<h5 style="text-align: left">Set up the threads count:</h5>
-		         	<div class="row" style="text-align: left;">
-			         	<div class="col-sm-6 form-group">
-			         		<input class="form-control" type="number" min="0" name="threads" value="16">
-			         	</div>
-			         	<div class="col-sm-6 form-group">
-							<button id="checkerBtn" class="btn btn-primary" type="submit">Run Check</button>
-						</div>
-					</div>
-				</form>
-       </div>
+            <form id="checkerFrm" action="/checking/" method="post">
+                <div class="row" style="text-align: left;">
+                    <div class="col-sm-12 form-group">
+                        <textarea style="overflow: auto;" class="form-control" id="proxy_list_id" name="proxy_list">{{ data }}</textarea>
+                        <small class="form-text text-muted">IP:PORT format is expected. Separated by the
+                            line.<br></small>
+                    </div>
+                </div>
+                <div id="printInfo"></div>
+
+                <h5 style="text-align: left">Set up the threads count:</h5>
+                <div class="row" style="text-align: left;">
+                    <div class="col-sm-6 form-group">
+                        <input class="form-control" id="threads" type="number" min="0" name="threads" value="16">
+                    </div>
+                    <div class="col-sm-6 form-group">
+                        <button id="checkerBtn" class="btn btn-primary" type="submit">Run Check
+                        </button>
+                        <input id="dwnld" type="button" style="visibility: hidden" class="btn" value="Download CSV"
+                               onclick="download()">
+
+                    </div>
+                </div>
+            </form>
+            <div>
+                <table id="table" border="1" class="table">
+                </table>
+
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- script type="text/javascript">
-	autosize(document.getElementById("proxy_list_id"));
-</script -->
-
 <script type="text/javascript">
-$(document).ready(function(){
-    $('#browsebutton :file').change(function(e){
-        var fileName = e.target.files[0].name;
-        $("#filename_field").attr('placeholder',fileName)
+    function download() {
+        let storedNames = JSON.parse(localStorage.getItem("values"));
+        let arr = [Object.keys(storedNames[0])].concat(storedNames)
+
+        let result = arr.map(it => {
+            return Object.values(it).toString()
+        }).join('\n')
+
+        let csvContent = "data:text/csv;charset=utf-8,";
+        let encodedUri = encodeURI(csvContent + result);
+        let link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "result.csv");
+        document.body.appendChild(link);
+
+        link.click();
+    }
+
+    $(function () {
+        $("#checkerFrm").on("submit", function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: $(this).attr("action"),
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    proxy_list: $("#proxy_list_id").val(),
+                    threads: $("#threads").val()
+                }),
+                success: function (data) {
+                    htmlTable(data, Object.keys(data[0]))
+                    localStorage.setItem("values", JSON.stringify(data));
+                    $("#dwnld").css('visibility', 'visible');
+                }
+            });
+        });
     });
-});
+
+    function htmlTable(data, columns) {
+        if ((!columns) || columns.length == 0) {
+            columns = Object.keys(data[0]);
+        }
+
+        var tbe = document.getElementById('table');
+        emptyDOMChildren(tbe);
+
+        var thead = document.createElement('thead');
+        tbe.appendChild(thead);
+
+        var tre = document.createElement('tr');
+        for (var i = 0; i < columns.length; i++) {
+            var the = document.createElement('th');
+            the.textContent = columns[i];
+            tre.appendChild(the);
+        }
+        thead.appendChild(tre);
+
+        var tbody = document.createElement('tbody');
+        tbe.appendChild(tbody);
+        for (var j = 0; j < data.length; j++) {
+            var tre = document.createElement('tr');
+            for (var i = 0; i < columns.length; i++) {
+                var the = document.createElement('td');
+                the.textContent = data[j][columns[i]];
+                tre.appendChild(the);
+            }
+            if (data[j].status_code === 200) {
+                tre.style.color = "green";
+            } else {
+                tre.style.color = "red";
+            }
+            tbody.appendChild(tre);
+        }
+    };
+
+    // Utility function to fast delete all children of element if it is not empty
+    // Can be replaced with simple but relatively "slower" container.innerHTML = "";
+    function emptyDOMChildren(container) {
+        var len = container.childNodes.length;
+        while (len--) {
+            container.removeChild(container.lastChild);
+        }
+        ;
+    };
+    $(document).ready(function () {
+        $('#browsebutton :file').change(function (e) {
+            var fileName = e.target.files[0].name;
+            $("#filename_field").attr('placeholder', fileName)
+        });
+
+    });
 </script>
 
-<script type="text/javascript">
-var frm = $('#checkerFrm');
-var subbtn = $("#checkerBtn");
-frm.submit(function () {
-	// subbtn.attr("disabled", true);
-	$("#printInfo").html('<p>Checking... Please, wait.</p>');
-});
-</script>
 {% endblock %}
