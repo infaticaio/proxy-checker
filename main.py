@@ -54,4 +54,4 @@ async def check_proxies(body: Body):
 
 if __name__ == "__main__":
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
-    uvicorn.run(app, host="127.0.0.1", port=8000, http="h11", loop="asyncio")
+    uvicorn.run(app, host="127.0.0.1", port=8000, http="h11", loop="uvloop")

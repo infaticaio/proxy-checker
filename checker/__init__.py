@@ -53,7 +53,7 @@ class ProxyChecker:
                     async with self.session.get(
                         "https://api.ipify.org",
                         proxy=f"{scheme}://{proxy}:{port}",
-                        timeout=ClientTimeout(5),
+                        timeout=ClientTimeout(30),
                     ) as r:
 
                         response = await r.text()
