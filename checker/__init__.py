@@ -70,12 +70,6 @@ class ProxyChecker:
                     collected_resp.append(resp)
                     continue
 
-                # if proxy doesn't work correctly
-                if response == self.ip:
-                    resp["status_code"] = 520
-                    collected_resp.append(resp)
-                    continue
-
                 resp["timeout"] = round((end - start).total_seconds() * 1000)
                 resp["status_code"] = 200
 
