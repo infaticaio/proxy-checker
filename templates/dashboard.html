@@ -97,6 +97,7 @@
                     htmlTable(data, Object.keys(data[0]))
                     localStorage.setItem("values", JSON.stringify(data));
                     $("#dwnld").css('visibility', 'visible');
+                    $('#table').tablesort();
                 }
             });
         });
