@@ -35,6 +35,7 @@ async def load_file(request: Request, uploaded_file: UploadFile = File(...)):
 class Body(BaseModel):
     proxy_list: str
     threads: int
+    type_proxy: str
 
 
 @app.post("/checking/")
@@ -46,7 +47,7 @@ async def check_proxies(body: Body):
     async with aiohttp.ClientSession(
         timeout=ClientTimeout(15), connector=conn, request_class=ProxyClientRequest
     ) as session:
-        checker = ProxyChecker(session, sem, set(proxy_list))
+        checker = ProxyChecker(session, sem, set(proxy_list), body.type_proxy)
         data = await checker.execute()
 
     return JSONResponse(data)

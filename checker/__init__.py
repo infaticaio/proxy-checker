@@ -7,11 +7,12 @@ from aiohttp import ClientTimeout
 
 class ProxyChecker:
     def __init__(
-        self, session: aiohttp.ClientSession, sem: asyncio.Semaphore, raw_proxies: set
+            self, session: aiohttp.ClientSession, sem: asyncio.Semaphore, raw_proxies: set, type_proxy: str
     ):
         self.session = session
         self.sem = sem
         self.raw_proxies = raw_proxies
+        self.type_proxy = type_proxy
 
     async def _get_ip(self):
         try:
@@ -24,7 +25,7 @@ class ProxyChecker:
     async def _check_all(self):
         data = []
         for i in await asyncio.gather(
-            *[self._check_proxy(i) for i in self.raw_proxies]
+                *[self._check_proxy(i) for i in self.raw_proxies]
         ):
             if i:
                 data.extend(i)
@@ -39,7 +40,7 @@ class ProxyChecker:
 
         collected_resp = []
 
-        for scheme in ["http", "socks4", "socks5"]:
+        for scheme in [self.type_proxy]:
             resp = {
                 "host": proxy,
                 "port": port,
@@ -51,9 +52,9 @@ class ProxyChecker:
                 try:
                     start = datetime.datetime.now()
                     async with self.session.get(
-                        "https://api.ipify.org",
-                        proxy=f"{scheme}://{proxy}:{port}",
-                        timeout=ClientTimeout(30),
+                            "https://api.ipify.org",
+                            proxy=f"{scheme}://{proxy}:{port}",
+                            timeout=ClientTimeout(30),
                     ) as r:
 
                         response = await r.text()

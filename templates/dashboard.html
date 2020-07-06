@@ -39,11 +39,22 @@
                     </div>
                 </div>
                 <div id="printInfo"></div>
+                <div class="row" style="text-align: left;">
+                    <div class="col-sm-6 form-group">
+                        <h5 style="text-align: left">Set up type of proxy:</h5>
+                        <select name="" id="type_proxy">
+                            <option value="http">http</option>
+                            <option value="socks4">socks4</option>
+                            <option value="socks5">socks5</option>
+                        </select>
+                    </div>
+                </div>
 
                 <h5 style="text-align: left">Set up the threads count:</h5>
                 <div class="row" style="text-align: left;">
                     <div class="col-sm-6 form-group">
-                        <input class="form-control" id="threads" type="number" min="0" max="500" name="threads" value="16">
+                        <input class="form-control" id="threads" type="number" min="0" max="500" name="threads"
+                               value="16">
                         <small class="form-text text-muted">Max count of threads is 500</small>
                     </div>
                     <div class="col-sm-6 form-group">
@@ -94,7 +105,8 @@
                 contentType: 'application/json',
                 data: JSON.stringify({
                     proxy_list: $("#proxy_list_id").val(),
-                    threads: $("#threads").val()
+                    threads: $("#threads").val(),
+                    type_proxy: $("#type_proxy").val()
                 }),
                 beforeSend: function (data) {
                     $("#image").css('visibility', 'visible');
