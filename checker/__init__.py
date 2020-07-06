@@ -26,7 +26,8 @@ class ProxyChecker:
         for i in await asyncio.gather(
             *[self._check_proxy(i) for i in self.raw_proxies]
         ):
-            data.extend(i)
+            if i:
+                data.extend(i)
 
         return data
 

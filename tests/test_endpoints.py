@@ -26,3 +26,21 @@ def test_check_proxies():
     assert response.status_code == 200
     resp_data = response.json()
     assert isinstance(resp_data, list)
+
+
+def test_check_proxies_wrong_input():
+    data = {"proxy_list": "127.0.0.1:8000\n127.0.0.1:\n127.0.0.1", "threads": 4}
+
+    response = client.post("/checking/", json=data)
+    assert response.status_code == 200
+    resp_data = response.json()
+    assert isinstance(resp_data, list)
+
+
+def test_check_proxies_without_input():
+    data = {"proxy_list": "", "threads": 4}
+
+    response = client.post("/checking/", json=data)
+    assert response.status_code == 200
+    resp_data = response.json()
+    assert len(resp_data) == 0
