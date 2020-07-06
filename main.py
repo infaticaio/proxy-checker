@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
+from aiosocks.connector import ProxyConnector, ProxyClientRequest
 
 from checker import ProxyChecker
 
@@ -40,8 +41,10 @@ class Body(BaseModel):
 async def check_proxies(body: Body):
     proxy_list = [proxy.strip() for proxy in body.proxy_list.split("\n")]
     sem = asyncio.Semaphore(value=body.threads)
+    conn = ProxyConnector(remote_resolve=False, verify_ssl=False)
+
     async with aiohttp.ClientSession(
-        timeout=ClientTimeout(15), connector=aiohttp.TCPConnector(ssl=False)
+        timeout=ClientTimeout(15), connector=conn, request_class=ProxyClientRequest
     ) as session:
         checker = ProxyChecker(session, sem, set(proxy_list))
         data = await checker.execute()

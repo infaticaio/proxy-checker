@@ -22,7 +22,12 @@ class ProxyChecker:
             return ""
 
     async def _check_all(self):
-        data = await asyncio.gather(*[self._check_proxy(i) for i in self.raw_proxies])
+        data = []
+        for i in await asyncio.gather(
+            *[self._check_proxy(i) for i in self.raw_proxies]
+        ):
+            data.extend(i)
+
         return data
 
     async def _check_proxy(self, proxy_string):
@@ -31,44 +36,51 @@ class ProxyChecker:
         except ValueError:
             return
 
-        resp = {
-            "host": proxy,
-            "port": port,
-            "timeout": "",
-            "status_code": 408,
-        }
+        collected_resp = []
 
-        async with self.sem:
-            try:
-                start = datetime.datetime.now()
-                async with self.session.get(
-                    "https://api.ipify.org",
-                    proxy=f"http://{proxy}:{port}",
-                    timeout=ClientTimeout(5),
-                ) as r:
-
-                    response = await r.text()
-                    end = datetime.datetime.now()
-            except asyncio.exceptions.TimeoutError:
-                return resp
-            except Exception:
-                resp["status_code"] = 520
-                return resp
-
-            if r.status != 200:
-                return resp
-
-            # if proxy doesn't work correctly
-            if response == self.ip:
-                resp["status_code"] = 520
-                return resp
-
-            return {
-                "timeout": round((end - start).total_seconds() * 1000),
+        for scheme in ["http", "socks4", "socks5"]:
+            resp = {
                 "host": proxy,
                 "port": port,
-                "status_code": 200,
+                "timeout": "",
+                "status_code": 408,
+                "scheme": scheme,
             }
+            async with self.sem:
+                try:
+                    start = datetime.datetime.now()
+                    async with self.session.get(
+                        "https://api.ipify.org",
+                        proxy=f"{scheme}://{proxy}:{port}",
+                        timeout=ClientTimeout(5),
+                    ) as r:
+
+                        response = await r.text()
+                        end = datetime.datetime.now()
+                except asyncio.exceptions.TimeoutError:
+                    collected_resp.append(resp)
+                    continue
+                except Exception:
+                    resp["status_code"] = 520
+                    collected_resp.append(resp)
+                    continue
+
+                if r.status != 200:
+                    collected_resp.append(resp)
+                    continue
+
+                # if proxy doesn't work correctly
+                if response == self.ip:
+                    resp["status_code"] = 520
+                    collected_resp.append(resp)
+                    continue
+
+                resp["timeout"] = round((end - start).total_seconds() * 1000)
+                resp["status_code"] = 200
+
+                collected_resp.append(resp)
+
+        return collected_resp
 
     async def execute(self):
         self.ip = await self._get_ip()

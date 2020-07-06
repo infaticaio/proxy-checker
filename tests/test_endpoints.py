@@ -8,14 +8,14 @@ client = TestClient(app)
 def test_index():
     response = client.get("/")
     assert response.status_code == 200
-    assert response.headers["content-length"] == "8269"
+    assert response.headers["content-length"] == "8383"
 
 
 def test_load_file():
     files = {"uploaded_file": open("tests/test_data_request.txt", "r")}
     response = client.post("/", files=files)
     assert response.status_code == 200
-    assert response.headers["content-length"] == "8325"
+    assert response.headers["content-length"] == "8439"
 
 
 def test_check_proxies():
