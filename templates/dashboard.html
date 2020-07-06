@@ -50,6 +50,33 @@
                     </div>
                 </div>
 
+                <div class="row" style="text-align: left;">
+                    <div class="col-sm-6 form-group">
+                        <h5 style="text-align: left">Human readable timeout (On is Seconds Off is Ms):</h5>
+                        <label class="switch">
+                            <input id="timeout" type="checkbox">
+                            <div class="slider"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="row" style="text-align: left;">
+                    <div class="col-sm-6 form-group">
+                        <h5 style="text-align: left">Check output IP:</h5>
+                        <label class="switch">
+                            <input id="on" type="checkbox">
+                            <div class="slider"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <h5 style="text-align: left">Set up validate url:</h5>
+                <div class="row" style="text-align: left;">
+                    <div class="col-sm-6 form-group">
+                        <input class="form-control" id="target" name="target" type="text"
+                               value="https://www.google.com">
+                    </div>
+                </div>
                 <h5 style="text-align: left">Set up the threads count:</h5>
                 <div class="row" style="text-align: left;">
                     <div class="col-sm-6 form-group">
@@ -106,7 +133,10 @@
                 data: JSON.stringify({
                     proxy_list: $("#proxy_list_id").val(),
                     threads: $("#threads").val(),
-                    type_proxy: $("#type_proxy").val()
+                    type_proxy: $("#type_proxy").val(),
+                    target: $("#target").val(),
+                    output_ip: $('#on').is(":checked"),
+                    timeout: $('#timeout').is(":checked"),
                 }),
                 beforeSend: function (data) {
                     $("#image").css('visibility', 'visible');

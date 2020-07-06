@@ -36,6 +36,9 @@ class Body(BaseModel):
     proxy_list: str
     threads: int
     type_proxy: str
+    output_ip: bool = False
+    timeout: bool = False
+    target: str
 
 
 @app.post("/checking/")
@@ -47,7 +50,15 @@ async def check_proxies(body: Body):
     async with aiohttp.ClientSession(
         timeout=ClientTimeout(15), connector=conn, request_class=ProxyClientRequest
     ) as session:
-        checker = ProxyChecker(session, sem, set(proxy_list), body.type_proxy)
+        checker = ProxyChecker(
+            session,
+            sem,
+            set(proxy_list),
+            body.type_proxy,
+            body.output_ip,
+            body.target,
+            body.timeout,
+        )
         data = await checker.execute()
 
     return JSONResponse(data)
