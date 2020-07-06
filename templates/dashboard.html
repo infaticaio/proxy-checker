@@ -55,6 +55,8 @@
                 </div>
             </form>
             <div>
+                <img id="image" src="{{ url_for('static', path='img/loading.gif') }}" style="visibility: hidden" alt="">
+
                 <table id="table" border="1" class="table">
                 </table>
 
@@ -93,10 +95,14 @@
                     proxy_list: $("#proxy_list_id").val(),
                     threads: $("#threads").val()
                 }),
+                beforeSend: function (data) {
+                    $("#image").css('visibility', 'visible');
+                },
                 success: function (data) {
                     htmlTable(data, Object.keys(data[0]))
                     localStorage.setItem("values", JSON.stringify(data));
                     $("#dwnld").css('visibility', 'visible');
+                    $("#image").css('visibility', 'hidden');
                     $('#table').tablesort();
                 }
             });
