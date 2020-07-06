@@ -43,7 +43,7 @@
                 <h5 style="text-align: left">Set up the threads count:</h5>
                 <div class="row" style="text-align: left;">
                     <div class="col-sm-6 form-group">
-                        <input class="form-control" id="threads" type="number" min="0" name="threads" value="16">
+                        <input class="form-control" id="threads" type="number" min="0" max="500" name="threads" value="16">
                     </div>
                     <div class="col-sm-6 form-group">
                         <button id="checkerBtn" class="btn btn-primary" type="submit">Run Check
@@ -123,6 +123,9 @@
         var tre = document.createElement('tr');
         for (var i = 0; i < columns.length; i++) {
             var the = document.createElement('th');
+            if (columns[i] === "timeout" || columns[i] === "status_code") {
+                the.classList.add("amount")
+            }
             the.textContent = columns[i];
             tre.appendChild(the);
         }
