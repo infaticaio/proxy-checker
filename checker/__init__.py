@@ -46,7 +46,7 @@ class ProxyChecker:
 
     async def _get(self, scheme, proxy, port, url):
         async with self.session.get(
-            url, proxy=f"{scheme}://{proxy}:{port}", timeout=ClientTimeout(5),
+            url, proxy=f"{scheme}://{proxy}:{port}", timeout=ClientTimeout(30),
         ) as r:
             response = await r.text()
             return response, r.status
@@ -66,7 +66,7 @@ class ProxyChecker:
                 "timeout": "",
                 "status_code": 408,
                 "scheme": scheme,
-                "safe": "-",
+                "external_ip": "-",
             }
             async with self.sem:
                 try:
@@ -93,9 +93,7 @@ class ProxyChecker:
                         collected_resp.append(resp)
                         continue
 
-                    # if proxy doesn't work correctly
-                    if response != self.ip:
-                        resp["safe"] = "+"
+                    resp["external_ip"] = response
 
                 readable = 1 if self.readable_timeout else 1000
                 resp["timeout"] = round((end - start).total_seconds() * readable)
